@@ -22,7 +22,7 @@ impl Exchange for MockExchange{
         Ok("mock_order_id_123456".to_string())
     }
 
-    async fn get_solde_current(&self, asset:&str)-> Result<f64>{
+    async fn get_solde_current(&self, _asset:&str)-> Result<f64>{
         Ok(1000.0)
     }
 }

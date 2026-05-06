@@ -1,10 +1,9 @@
-use async_triat::async_trait;
+use async_trait::async_trait;
 use anyhow::Result;
 use reqwest::Client;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use super::{Exchange, Price};
-use std::env;
 
 
 
@@ -16,12 +15,12 @@ pub struct CryptoComExchange {
 }
 
 impl CryptoComExchange{
-    pub fn new_user(api_key: String, api_secret: String)-> Self {
+    pub fn new(api_key: String, api_secret: String, url_brocker: String)-> Self {
         Self {
             api_key,
             api_secret,
             client: Client::new(),
-            base_url: env::var("BASE_URL_CRYPTOCOM").expect("BASE_URL_CRYPTOCOM manquant").to_string(),
+            base_url: url_brocker,
         }
     }
     // fonction pour créer les signatures numérique exigé par crypto.com 
@@ -38,6 +37,7 @@ impl CryptoComExchange{
 
 #[async_trait]
 impl Exchange for CryptoComExchange {
+    // async fn get_price(&self, symbol: &str) -> Result<Price>;
     async fn get_price(&self, symbol: &str) -> Result<Price> {
         let url = format!("{}public/get-ticker?instrument_name={}", self.base_url, symbol);
         
@@ -55,7 +55,7 @@ impl Exchange for CryptoComExchange {
         })
     }
 
-    async fn place_order(&self, symbol: &str, amount: f64) -> Result<String> {
+    async fn place_order(&self, symbol: &str, _amount: f64) -> Result<String> {
         // c'est ici que la signature intervient pour un ordre réel
         println!("🔐 Signature de l'ordre pour {}...", symbol);
         // todo : appel POST à private/create-order
