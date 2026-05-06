@@ -1,14 +1,14 @@
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
 use crate::exchange::Exchange;
-use crate::exchange::cryptocom::CryptoComExchange;
+use crate::exchange::mock::MockExchange;
 use sqlx::PgPool;
 use uuid::Uuid;
 
 pub async fn run_brain_bot(
     user_id: Uuid,      
     pool: PgPool,       
-    exchange: Arc<CryptoComExchange>,
+    exchange: Arc<MockExchange>,
     symbol: String,
 ) {
     loop {
@@ -27,7 +27,7 @@ pub async fn run_brain_bot(
                 use sqlx::Row;
                 let solde_virtuel: f64 = row.get("virtual_balance");
 
-                if solde_virtuel >= 50.0 {
+                if solde_virtuel >= 5000.0 {
                     let quantite = 50.0 / prix_actuel; 
                     let nouveau_solde = solde_virtuel - 50.0;
 
@@ -47,6 +47,6 @@ pub async fn run_brain_bot(
             }
         }
 
-        sleep(Duration::from_secs(60)).await;
+        sleep(Duration::from_secs(5)).await;
     }
 }
