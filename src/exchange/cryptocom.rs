@@ -1,11 +1,10 @@
 use async_trait::async_trait;
-use anyhow::Result;
+use anyhow::{Result};
 use reqwest::Client;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use super::{Exchange, Price};
 use tokio::time::{Duration};
-
 
 
 pub struct CryptoComExchange {
@@ -16,8 +15,8 @@ pub struct CryptoComExchange {
 }
 
 impl CryptoComExchange{
-    pub fn new(api_key: String, api_secret: String, url_brocker: String)-> Self {
-        let client = Client::builder()
+    pub fn new(api_key: String, api_secret: String)-> Self {
+        let _client = Client::builder()
             .timeout(Duration::from_secs(5)) // Si l'exchange ne répond pas en 5s, on abandonne
             .build()
             .expect("Erreur lors de la création du client HTTP");
@@ -26,7 +25,7 @@ impl CryptoComExchange{
             api_key,
             api_secret,
             client: Client::new(),
-            base_url: url_brocker,
+            base_url: "https://api.crypto.com/exchange/v1/".to_string(),
         }
     }
     // fonction pour créer les signatures numérique exigé par crypto.com 
@@ -90,51 +89,17 @@ impl Exchange for CryptoComExchange {
     }
 
     async fn place_order(&self, symbol: &str, amount: f64) -> Result<String> {
-        let url = format!("{}private/create-order", self.base_url);
-        let id = 123; // Identifiant unique de requête
-        let nonce = std::time::SystemTime::now()
+        println!("📝 [SIMULATION] Ordre d'achat de {} {} validé virtuellement.", amount, symbol);
+        
+        // On simule un ID d'ordre unique
+        let fake_id = format!("SIM_{}", std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)?
-            .as_millis() as u64;
-
-        // Paramètres de l'ordre
-        let params = serde_json::json!({
-            "instrument_name": symbol,
-            "side": "BUY",
-            "type": "MARKET",
-            "quantity": amount,
-        });
-
-        // Génération de la signature
-        let sig = self.generate_signature(id, "private/create-order", &params, nonce);
-
-        // Construction du corps de la requête JSON
-        let body = serde_json::json!({
-            "id": id,
-            "method": "private/create-order",
-            "api_key": self.api_key,
-            "params": params,
-            "nonce": nonce,
-            "sig": sig
-        });
-
-        let response = self.client.post(url)
-            .json(&body)
-            .send()
-            .await?
-            .json::<serde_json::Value>()
-            .await?;
-
-        // Vérification du code de réponse de l'exchange
-        if response["code"] != 0 {
-            let msg = response["message"].as_str().unwrap_or("Erreur inconnue");
-            return Err(anyhow::anyhow!("Exchange Error {}: {}", response["code"], msg));
-        }
-
-        Ok(response["result"]["order_id"].to_string())
+            .as_secs());
+            
+        Ok(fake_id)
     }
 
     async fn get_solde_current(&self, _asset: &str) -> Result<f64> {
-        // todo : appel à private/get-account-summary
-        Ok(0.0) 
+        Ok(0.0)
     }
 }
