@@ -4,6 +4,9 @@ use anyhow::Result;
 pub mod mock;
 pub use mock::*;
 
+pub mod cryptocom;
+pub use cryptocom::*;
+
 #[derive(Debug)]
 pub struct Price{
     pub symbol: String,
