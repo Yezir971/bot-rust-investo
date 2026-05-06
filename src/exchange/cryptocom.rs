@@ -4,6 +4,7 @@ use reqwest::Client;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use super::{Exchange, Price};
+use tokio::time::{Duration};
 
 
 
@@ -16,6 +17,11 @@ pub struct CryptoComExchange {
 
 impl CryptoComExchange{
     pub fn new(api_key: String, api_secret: String, url_brocker: String)-> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(5)) // Si l'exchange ne répond pas en 5s, on abandonne
+            .build()
+            .expect("Erreur lors de la création du client HTTP");
+
         Self {
             api_key,
             api_secret,
@@ -120,7 +126,8 @@ impl Exchange for CryptoComExchange {
 
         // Vérification du code de réponse de l'exchange
         if response["code"] != 0 {
-            return Err(anyhow::anyhow!("Erreur API : {}", response["message"]));
+            let msg = response["message"].as_str().unwrap_or("Erreur inconnue");
+            return Err(anyhow::anyhow!("Exchange Error {}: {}", response["code"], msg));
         }
 
         Ok(response["result"]["order_id"].to_string())
