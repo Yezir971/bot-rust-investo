@@ -6,7 +6,6 @@ use reqwest::Client;
 use tokio::time::{Duration};
 
 
-// pub struct MockExchange;
 
 pub struct MockExchange {
     api_key: String,
